@@ -50,7 +50,9 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
     auto ptCloud= lidar->scan();
 
-    renderRays(viewer,lidar->position,ptCloud);
+    //renderRays(viewer,lidar->position,ptCloud);
+
+    renderPointCloud(viewer,ptCloud,"PointCloud#1",Color(1,1,1));
 
 
 }
