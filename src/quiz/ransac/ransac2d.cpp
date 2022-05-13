@@ -78,9 +78,9 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 		pcl::PointXYZ p1;
 		pcl::PointXYZ p2;
 		do{
-		p1RandomIdx = (int)(cloud.get()->size()*(((double) rand() / (RAND_MAX))));
+		p1RandomIdx = rand()%cloud.get()->size();
 		p1 = cloud.get()->points[p1RandomIdx];
-		p2RandomIdx = (int)(cloud.get()->size()*(((double) rand() / (RAND_MAX))));
+		p2RandomIdx = rand()%cloud.get()->size();;
 		p2 = cloud.get()->points[p2RandomIdx];
 		} while (p1RandomIdx == p2RandomIdx);
 
