@@ -65,18 +65,46 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 {
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
-	
+
 	// TODO: Fill in this function
 
-	// For max iterations 
+	// For max iterations
+	for (int i=0; i < maxIterations; i++){
+		std::unordered_set<int> inliersMax;
 
-	// Randomly sample subset and fit line
+		// Randomly sample subset and fit line
+		int p1RandomIdx = 0;
+		int p2RandomIdx = 0;
+		pcl::PointXYZ p1;
+		pcl::PointXYZ p2;
+		do{
+		p1RandomIdx = (int)(cloud.get()->size()*(((double) rand() / (RAND_MAX))));
+		p1 = cloud.get()->points[p1RandomIdx];
+		p2RandomIdx = (int)(cloud.get()->size()*(((double) rand() / (RAND_MAX))));
+		p2 = cloud.get()->points[p2RandomIdx];
+		} while (p1RandomIdx == p2RandomIdx);
 
-	// Measure distance between every point and fitted line
-	// If distance is smaller than threshold count it as inlier
+		// Line Coefficients
+		double A = (p1.y - p2.y);
+		double B = (p2.x - p1.x);
+		double C = (p1.x * p2.y)-(p2.x * p1.y);
 
+		// Measure distance between every point and fitted line
+		int idx = 0;
+		for(auto const & point:cloud.get()->points){
+			float d = abs(A*point.x + B*point.y + C)/sqrt(A*A+B*B);
+			// If distance is smaller than threshold count it as inlier
+			if(d < distanceTol){
+				inliersMax.insert(idx);
+			}
+			idx++;
+		}
+		if (inliersMax.size() > inliersResult.size()){
+			inliersResult = inliersMax;
+		}
+	}
 	// Return indicies of inliers from fitted line with most inliers
-	
+
 	return inliersResult;
 
 }
@@ -89,10 +117,10 @@ int main ()
 
 	// Create data
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData();
-	
+
 
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
-	std::unordered_set<int> inliers = Ransac(cloud, 0, 0);
+	std::unordered_set<int> inliers = Ransac(cloud, 50, 0.5);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());
@@ -117,10 +145,10 @@ int main ()
   	{
   		renderPointCloud(viewer,cloud,"data");
   	}
-	
+
   	while (!viewer->wasStopped ())
   	{
   	  viewer->spinOnce ();
   	}
-  	
+
 }
