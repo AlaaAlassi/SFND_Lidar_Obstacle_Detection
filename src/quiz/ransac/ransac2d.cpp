@@ -114,8 +114,10 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 			}
 			auto it = inliers.begin();
 			auto p1 = cloud->points[*it];
-			auto p2 = cloud->points[*it+1];
-			auto p3 = cloud->points[*it+2];
+			it++;
+			auto p2 = cloud->points[*it];
+			it++;
+			auto p3 = cloud->points[*it];
 			Eigen::Vector3d v1(p2.x - p1.x,		p2.y - p1.y,	p2.z-p1.z);
 			Eigen::Vector3d v2(p3.x - p1.x,		p3.y - p1.y,	p3.z-p1.z);
 			auto v3 = v1.cross(v2);
@@ -164,7 +166,7 @@ int main()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData3D();
 
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
-	std::unordered_set<int> inliers = Ransac(cloud, 1000, 0.5);
+	std::unordered_set<int> inliers = Ransac(cloud, 100, 0.2);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());
