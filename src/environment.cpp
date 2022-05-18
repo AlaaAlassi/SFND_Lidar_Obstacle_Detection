@@ -42,7 +42,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // ----------------------------------------------------
 
     // RENDER OPTIONS
-    bool renderScene = true;
+    bool renderScene = false;
     std::vector<Car> cars = initHighway(renderScene, viewer);
 
     // TODO:: Create lidar sensor
@@ -57,9 +57,20 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     ProcessPointClouds<pcl::PointXYZ> processPCD;
 
     auto result = processPCD.SegmentPlane(ptCloud,100,0.2);
+    float clusterTolerance = 1;
+    int minSize = 3;
+    int maxSize =30;
+    auto detectedClusters = processPCD.Clustering( result.second, clusterTolerance, minSize, maxSize);
 
-    renderPointCloud(viewer,result.first,"planeCloud#2",Color(1,0,0));
-    renderPointCloud(viewer,result.second,"obstaclesCloud#3",Color(0,1,0));
+    //renderPointCloud(viewer,result.first,"planeCloud#2",Color(1,0,0));
+    //renderPointCloud(viewer,result.second,"obstaclesCloud#3",Color(0,1,0));
+    std::vector<Color> colors = {Color(1,1,0), Color(1,1,1), Color(0,0,1)};
+
+    int i=0;
+    for(auto const & cluster:detectedClusters){
+        renderPointCloud(viewer,cluster,"obstacle#"+std::to_string(i),colors[i]);
+        i++;
+    }
 
 
 

@@ -68,22 +68,29 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
     // TODO:: Fill in this function to find inliers for the cloud.
+    // create PointIndices pointer
+    pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
 
     // create segmentation object
-    pcl::SACSegmentation<PointT> seg;
+    /*pcl::SACSegmentation<PointT> seg;
     seg.setModelType(pcl::SACMODEL_PLANE);
     seg.setMethodType(pcl::SAC_RANSAC);
     seg.setMaxIterations(maxIterations);
     seg.setDistanceThreshold(distanceThreshold);
 
-    // create PointIndices pointer
-    pcl::PointIndices::Ptr inliers (new pcl::PointIndices ());
-
     // set model coefficient
     pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
 
     seg.setInputCloud(cloud);
-    seg.segment(*inliers, *coefficients);
+    seg.segment(*inliers, *coefficients);*/
+
+    auto result = Ransac(cloud,maxIterations,distanceThreshold);
+    for(auto it = result.begin(); it !=result.end();it++){
+        inliers->indices.push_back(*it);
+    }
+
+
+
     if (inliers->indices.size () == 0)
     {
       std::cerr << "Could not estimate a planar model for the given dataset." << std::endl;
@@ -106,9 +113,34 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
     // Time clustering process
     auto startTime = std::chrono::steady_clock::now();
 
+    std::vector<pcl::PointIndices> cluster_indices;
     std::vector<typename pcl::PointCloud<PointT>::Ptr> clusters;
 
     // TODO:: Fill in the function to perform euclidean clustering to group detected obstacles
+    pcl::EuclideanClusterExtraction<PointT> ec;
+    typename pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT>);
+    tree->setInputCloud (cloud);
+
+    ec.setClusterTolerance (clusterTolerance); // 2cm
+    ec.setMinClusterSize (minSize);
+    ec.setMaxClusterSize (maxSize);
+    ec.setSearchMethod (tree);
+    ec.setInputCloud (cloud);
+    ec.extract (cluster_indices);
+
+    for (auto it = cluster_indices.begin (); it != cluster_indices.end (); ++it){
+        typename pcl::PointCloud<PointT>::Ptr cloud_cluster (new pcl::PointCloud<PointT>);
+    for (const auto& idx : it->indices){
+
+    cloud_cluster->push_back ((*cloud)[idx]); //*
+    }
+    cloud_cluster->width = cloud_cluster->size ();
+    cloud_cluster->height = 1;
+    cloud_cluster->is_dense = true;
+
+
+    clusters.push_back(cloud_cluster);
+    }
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
@@ -173,4 +205,103 @@ std::vector<std::__fs::filesystem::path> ProcessPointClouds<PointT>::streamPcd(s
 
     return paths;
 
+}
+
+template<typename PointT>
+std::unordered_set<int> ProcessPointClouds<PointT>::Ransac(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol)
+{
+	std::unordered_set<int> inliersResult;
+	srand(time(NULL));
+	enum ModelType
+	{
+		line,
+		plane
+	};
+	ModelType model = ModelType::plane;
+	// TODO: Fill in this function
+
+	// For max iterations
+	for (int i = 0; i < maxIterations; i++)
+	{
+		std::unordered_set<int> inliers;
+
+		if (model == ModelType::line)
+		{
+			// Randomly sample subset and fit line
+		int p1RandomIdx = 0;
+		int p2RandomIdx = 0;
+		pcl::PointXYZ p1;
+		pcl::PointXYZ p2;
+		do
+		{
+			p1RandomIdx = rand() % cloud.get()->size();
+			p1 = cloud.get()->points[p1RandomIdx];
+			p2RandomIdx = rand() % cloud.get()->size();
+			;
+			p2 = cloud.get()->points[p2RandomIdx];
+		} while (p1RandomIdx == p2RandomIdx);
+			// Line Coefficients
+			double A = (p1.y - p2.y);
+			double B = (p2.x - p1.x);
+			double C = (p1.x * p2.y) - (p2.x * p1.y);
+
+			// Measure distance between every point and fitted line
+			int idx = 0;
+			for (auto const &point : cloud.get()->points)
+			{
+				float d = abs(A * point.x + B * point.y + C) / sqrt(A*A + B*B);
+				// If distance is smaller than threshold count it as inlier
+				if (d < distanceTol)
+				{
+					inliers.insert(idx);
+				}
+				idx++;
+			}
+		} else if (model == ModelType::plane)
+		{
+			while(inliers.size() < 3){
+				inliers.insert(rand()%cloud.get()->size());
+			}
+			auto it = inliers.begin();
+			auto p1 = cloud->points[*it];
+			it++;
+			auto p2 = cloud->points[*it];
+			it++;
+			auto p3 = cloud->points[*it];
+			Eigen::Vector3d v1(p2.x - p1.x,		p2.y - p1.y,	p2.z-p1.z);
+			Eigen::Vector3d v2(p3.x - p1.x,		p3.y - p1.y,	p3.z-p1.z);
+			auto v3 = v1.cross(v2);
+
+			double A = v3.x();
+			double B = v3.y();
+			double C = v3.z();
+			double D = -(A*p1.x + B*p1.y + C*p1.z);
+
+			for (int idx = 0;idx < cloud->size();idx++)
+			{
+				auto point = cloud->points[idx];
+				if(inliers.count(idx)){
+					continue;
+				}
+
+				float d = abs(A * point.x + B * point.y + C*point.z + D) / sqrt(A*A + B*B + C*C);
+				// If distance is smaller than threshold count it as inlier
+				if (d < distanceTol)
+				{
+					inliers.insert(idx);
+				}
+			}
+
+			//cout << v3.x() <<" "<< v3.y() <<" "<< v3.z() << endl;
+		}
+
+
+		if (inliers.size() > inliersResult.size())
+		{
+			inliersResult = inliers;
+		}
+	}
+	// Return indicies of inliers from fitted line with most inliers
+
+	return inliersResult;
 }
