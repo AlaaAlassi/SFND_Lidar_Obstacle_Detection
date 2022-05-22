@@ -67,9 +67,9 @@ struct KdTree
 
 	void searchHelper(vector<float> target, Node *node, int depth, float distanceTolerance, vector<int> &ids)
 	{
-
 		if (node != NULL)
 		{
+			std::cout << "node coordinates x " << node->point[0] << " y " << node->point[1] << std::endl;
 			float Px = target[0] - node->point[0];
 			float Py = target[1] - node->point[1];
 			bool isInsideTheBox = abs(Px) <= distanceTolerance && abs(Py) <= distanceTolerance;

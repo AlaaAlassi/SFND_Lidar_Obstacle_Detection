@@ -7,6 +7,8 @@
 #include <string>
 #include "kdtree.h"
 
+using namespace std;
+
 // Arguments:
 // window is the region to draw box around
 // increase zoom to see more of the area
@@ -75,12 +77,36 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 
 }
 
+void proximity(const vector<vector<float>> &points,
+std::vector<int> &cluster,
+vector<bool> &processed,
+int idx,
+KdTree* tree,
+float distanceTol)
+{
+	processed[idx] = true;
+	cluster.push_back(idx);
+	auto nearest = tree->search(points[idx],distanceTol);
+	for(auto const id:nearest){
+		if(!processed[id]){
+			proximity(points,cluster,processed,id,tree,distanceTol);
+		}
+	}
+}
+
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
 
 	// TODO: Fill out this function to return list of indices for each cluster
-
+	std::vector<bool> processed(points.size(),false);
 	std::vector<std::vector<int>> clusters;
+	for(int i=0;i<points.size();i++){
+		if(!processed[i]){
+			std::vector<int> cluster;
+			proximity(points,cluster,processed,i,tree,distanceTol);
+			clusters.push_back(cluster);
+		}
+	}
  
 	return clusters;
 
