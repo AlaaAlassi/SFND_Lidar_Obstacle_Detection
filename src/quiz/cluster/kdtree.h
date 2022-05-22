@@ -73,7 +73,6 @@ struct KdTree
 			float Px = target[0] - node->point[0];
 			float Py = target[1] - node->point[1];
 			bool isInsideTheBox = abs(Px) <= distanceTolerance && abs(Py) <= distanceTolerance;
-			unsigned int depth = 0;
 			int changeDimention = depth%2;
 			/*std::cout << "root " << currentNode->point[0] << " " << currentNode->point[1] << std::endl;
 			std::cout << "target " << target[0] << " "<< target[1] << std::endl;
