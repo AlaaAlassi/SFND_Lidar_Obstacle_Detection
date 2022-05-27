@@ -58,7 +58,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
     auto result = processPCD.SegmentPlane(ptCloud,100,0.2);
     float clusterTolerance = 1;
-    int minSize = 3;
+    int minSize = 4;
     int maxSize =30;
     auto detectedClusters = processPCD.Clustering( result.second, clusterTolerance, minSize, maxSize);
 
@@ -102,6 +102,12 @@ void initCamera(CameraAngle setAngle, pcl::visualization::PCLVisualizer::Ptr& vi
         viewer->addCoordinateSystem (1.0);
 }
 
+void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer){
+    ProcessPointClouds<pcl::PointXYZI>* pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
+    pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud =  pointProcessorI->loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
+    pointProcessorI->FilterCloud(inputCloud,1.0f,{-10,-10,-10,1},{10,10,10,1});
+    renderPointCloud(viewer,inputCloud,"inputCloud");
+}
 
 int main (int argc, char** argv)
 {
@@ -110,7 +116,8 @@ int main (int argc, char** argv)
     pcl::visualization::PCLVisualizer::Ptr viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
     CameraAngle setAngle = XY;
     initCamera(setAngle, viewer);
-    simpleHighway(viewer);
+    //simpleHighway(viewer);
+    cityBlock(viewer);
 
     while (!viewer->wasStopped ())
     {
