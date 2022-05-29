@@ -263,8 +263,8 @@ std::unordered_set<int> ProcessPointClouds<PointT>::Ransac(typename pcl::PointCl
 			// Randomly sample subset and fit line
 		int p1RandomIdx = 0;
 		int p2RandomIdx = 0;
-		pcl::PointXYZ p1;
-		pcl::PointXYZ p2;
+		PointT p1;
+		PointT p2;
 		do
 		{
 			p1RandomIdx = rand() % cloud.get()->size();
