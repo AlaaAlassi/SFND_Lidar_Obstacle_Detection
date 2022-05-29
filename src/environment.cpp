@@ -113,8 +113,8 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer){
     // segment cloud
     ProcessPointClouds<pcl::PointXYZI> processPCD;
     auto segmentedCloud = processPCD.SegmentPlane(filteredCloud,100,0.2);
-    renderPointCloud(viewer,segmentedCloud.first,"street",Color(1,0,0));
-    renderPointCloud(viewer,segmentedCloud.second,"obsticle",Color(1,1,1));
+    renderPointCloud(viewer,segmentedCloud.first,"street",Color(0,1,0));
+    //renderPointCloud(viewer,segmentedCloud.second,"obsticle",Color(1,1,1));
 
 
     //cluster the obsticle cloud
@@ -122,13 +122,13 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer){
     int minSize = 20;
     int maxSize =1000;
     auto detectedClusters = processPCD.Clustering(segmentedCloud.second, clusterTolerance, minSize, maxSize);
-    std::vector<Color> colors = {Color(1,1,0), Color(1,1,1), Color(0,0,1)};
+    std::vector<Color> colors = {Color(1,1,0), Color(1,0,0), Color(0,0,1)};
 
     int i=0;
     for(auto const & cluster:detectedClusters){
         Box box = processPCD.BoundingBox(cluster);
-        renderBox(viewer,box,i);
-        renderPointCloud(viewer,cluster,"obstacle#"+std::to_string(i),colors[i]);
+        //renderBox(viewer,box,i);
+        renderPointCloud(viewer,cluster,"obstacle#"+std::to_string(i),colors[i%3]);
         i++;
     }
 
