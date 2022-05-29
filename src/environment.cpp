@@ -107,13 +107,30 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer){
     // filter cloud
     ProcessPointClouds<pcl::PointXYZI>* pointProcessorI = new ProcessPointClouds<pcl::PointXYZI>();
     pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud =  pointProcessorI->loadPcd("../src/sensors/data/pcd/data_1/0000000000.pcd");
-    auto filteredCloud  = pointProcessorI->FilterCloud(inputCloud,1.0f,{-20,-15,-10,1},{20,15,10,1});
+    auto filteredCloud  = pointProcessorI->FilterCloud(inputCloud,0.1f,{-20,-6,-2,1},{20,6,0,1});
     //renderPointCloud(viewer,filteredCloud,"inputCloud");
 
     // segment cloud
     ProcessPointClouds<pcl::PointXYZI> processPCD;
     auto segmentedCloud = processPCD.SegmentPlane(filteredCloud,100,0.2);
     renderPointCloud(viewer,segmentedCloud.first,"street",Color(1,0,0));
+    renderPointCloud(viewer,segmentedCloud.second,"obsticle",Color(1,1,1));
+
+
+    //cluster the obsticle cloud
+    float clusterTolerance =0.5;
+    int minSize = 20;
+    int maxSize =1000;
+    auto detectedClusters = processPCD.Clustering(segmentedCloud.second, clusterTolerance, minSize, maxSize);
+    std::vector<Color> colors = {Color(1,1,0), Color(1,1,1), Color(0,0,1)};
+
+    int i=0;
+    for(auto const & cluster:detectedClusters){
+        Box box = processPCD.BoundingBox(cluster);
+        renderBox(viewer,box,i);
+        renderPointCloud(viewer,cluster,"obstacle#"+std::to_string(i),colors[i]);
+        i++;
+    }
 
 }
 
