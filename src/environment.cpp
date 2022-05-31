@@ -108,6 +108,7 @@ void initCamera(CameraAngle setAngle, pcl::visualization::PCLVisualizer::Ptr &vi
 void cityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer, ProcessPointClouds<pcl::PointXYZI> *pointProcessorI, const pcl::PointCloud<pcl::PointXYZI>::Ptr& inputCloud)
 {
 
+
     // filter cloud
     auto filteredCloud = pointProcessorI->FilterCloud(inputCloud, 0.1f, {-20, -6, -2, 1}, {20, 6, 0, 1});
     // renderPointCloud(viewer,filteredCloud,"inputCloud");
@@ -122,7 +123,10 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer, ProcessPointCloud
     float clusterTolerance = 0.3;
     int minSize = 20;
     int maxSize = 2000;
-    auto detectedClusters = processPCD.Clustering(segmentedCloud.second, clusterTolerance, minSize, maxSize);
+    //auto detectedClusters = processPCD.Clustering(segmentedCloud.second, clusterTolerance, minSize, maxSize);
+    auto detectedClusters = processPCD.eucledianClustering(segmentedCloud.second, clusterTolerance, minSize, maxSize);
+
+    
     std::vector<Color> colors = {Color(1, 1, 0), Color(1, 0, 0), Color(0, 0, 1)};
 
     int i = 0;

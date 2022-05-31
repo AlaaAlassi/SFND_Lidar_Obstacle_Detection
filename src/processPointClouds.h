@@ -19,14 +19,15 @@
 #include <chrono>
 #include <unordered_set>
 #include "render/box.h"
+#include "quiz/cluster/kdtree.h"
 
-template<typename PointT>
-class ProcessPointClouds {
+template <typename PointT>
+class ProcessPointClouds
+{
 public:
-
-    //constructor
+    // constructor
     ProcessPointClouds();
-    //deconstructor
+    // deconstructor
     ~ProcessPointClouds();
 
     void numPoints(typename pcl::PointCloud<PointT>::Ptr cloud);
@@ -41,13 +42,22 @@ public:
 
     std::vector<typename pcl::PointCloud<PointT>::Ptr> Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
 
+    std::vector<typename pcl::PointCloud<PointT>::Ptr> eucledianClustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize);
+
     Box BoundingBox(typename pcl::PointCloud<PointT>::Ptr cluster);
 
     void savePcd(typename pcl::PointCloud<PointT>::Ptr cloud, std::string file);
 
     typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
-    
+
     std::vector<std::__fs::filesystem::path> streamPcd(std::string dataPath);
-  
+
+private:
+    void proximity(const vector<vector<float>> &points,
+                   std::vector<int> &cluster,
+                   vector<bool> &processed,
+                   int idx,
+                   KdTree *tree,
+                   float distanceTol);
 };
 #endif /* PROCESSPOINTCLOUDS_H_ */
