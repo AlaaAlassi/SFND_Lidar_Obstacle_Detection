@@ -40,7 +40,7 @@ struct KdTree
 
 	void insertHelper(Node **node, unsigned int depth, std::vector<float> point, int id)
 	{
-		int changeDimention = depth % 2;
+		int changeDimention = depth % point.size();
 
 		if (*node == NULL)
 		{
@@ -69,19 +69,14 @@ struct KdTree
 	{
 		if (node != NULL)
 		{
-			std::cout << "node coordinates x " << node->point[0] << " y " << node->point[1] << std::endl;
 			float Px = target[0] - node->point[0];
 			float Py = target[1] - node->point[1];
 			bool isInsideTheBox = abs(Px) <= distanceTolerance && abs(Py) <= distanceTolerance;
-			int changeDimention = depth%2;
-			/*std::cout << "root " << currentNode->point[0] << " " << currentNode->point[1] << std::endl;
-			std::cout << "target " << target[0] << " "<< target[1] << std::endl;
-			std::cout << "isInsideTheBox " << isInsideTheBox << std::endl;*/
+			int changeDimention = depth% (node->point.size());
 
 			if (isInsideTheBox)
 			{
 				float d = sqrt(Px * Px + Py * Py);
-				std::cout << "d " << d << std::endl;
 				if (d <= distanceTolerance)
 				{
 					ids.push_back(node->id);
@@ -92,13 +87,11 @@ struct KdTree
 			auto rightArrow = (target[changeDimention]+distanceTolerance);
 			bool searchRightBranch = rightArrow > node->point[changeDimention];
 			if(searchRightBranch){
-				cout << "searchRightBranch" << endl;
 				searchHelper(target,node->right,depth+1,distanceTolerance,ids);
 			}
 			auto leftArrow = (target[changeDimention]-distanceTolerance);
 			bool searchLeftBranch = leftArrow < node->point[changeDimention];
 			if(searchLeftBranch){
-				cout << "searchLeftBranch" << endl;
 				searchHelper(target,node->left,depth+1,distanceTolerance,ids);
 			}
 		}
