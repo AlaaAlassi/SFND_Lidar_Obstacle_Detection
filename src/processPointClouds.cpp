@@ -233,6 +233,7 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::e
 
     for (std::vector<int> cluster : clusters)
     {
+        if(cluster.size()< minSize || cluster.size()> maxSize) continue;
         typename pcl::PointCloud<PointT>::Ptr clusterCloud(new pcl::PointCloud<PointT>());
         for (int indice : cluster)
             clusterCloud->points.push_back(cloud->points[indice]);
