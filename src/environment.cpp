@@ -55,7 +55,9 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
 
     ProcessPointClouds<pcl::PointXYZ> processPCD;
 
-    auto result = processPCD.SegmentPlane(ptCloud, 100, 0.2);
+    // if this flag is false, the function will skip PCL segmentation and use my implementation
+    bool usingPCL = false;
+    auto result = processPCD.SegmentPlane(ptCloud, 100, 0.2,usingPCL);
     float clusterTolerance = 1;
     int minSize = 4;
     int maxSize = 30;
@@ -115,7 +117,9 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer, ProcessPointCloud
 
     // segment cloud
     ProcessPointClouds<pcl::PointXYZI> processPCD;
-    auto segmentedCloud = processPCD.SegmentPlane(filteredCloud, 100, 0.2);
+    // if this flag is false, the function will skip PCL segmentation and use my implementation
+    bool usingPCL = false;
+    auto segmentedCloud = processPCD.SegmentPlane(filteredCloud, 100, 0.2,usingPCL);
     renderPointCloud(viewer, segmentedCloud.first, "street", Color(0, 1, 0));
     // renderPointCloud(viewer,segmentedCloud.second,"obsticle",Color(1,1,1));
 
@@ -126,7 +130,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer, ProcessPointCloud
     //auto detectedClusters = processPCD.Clustering(segmentedCloud.second, clusterTolerance, minSize, maxSize);
     auto detectedClusters = processPCD.eucledianClustering(segmentedCloud.second, clusterTolerance, minSize, maxSize);
 
-    
+
     std::vector<Color> colors = {Color(1, 1, 0), Color(1, 0, 0), Color(0, 0, 1)};
 
     int i = 0;

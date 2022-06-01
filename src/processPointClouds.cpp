@@ -88,31 +88,39 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 }
 
 template <typename PointT>
-std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceThreshold)
+std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud,
+                                                                                                                                 int maxIterations,
+                                                                                                                                 float distanceThreshold,
+                                                                                                                                 bool usindPCL)
 {
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
-    // TODO:: Fill in this function to find inliers for the cloud.
+
     // create PointIndices pointer
     pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
 
-    // create segmentation object
-    /*pcl::SACSegmentation<PointT> seg;
-    seg.setModelType(pcl::SACMODEL_PLANE);
-    seg.setMethodType(pcl::SAC_RANSAC);
-    seg.setMaxIterations(maxIterations);
-    seg.setDistanceThreshold(distanceThreshold);
-
-    // set model coefficient
-    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
-
-    seg.setInputCloud(cloud);
-    seg.segment(*inliers, *coefficients);*/
-
-    auto result = Ransac(cloud, maxIterations, distanceThreshold);
-    for (auto it = result.begin(); it != result.end(); it++)
+    if (usindPCL)
     {
-        inliers->indices.push_back(*it);
+        // create segmentation object
+        pcl::SACSegmentation<PointT> seg;
+        seg.setModelType(pcl::SACMODEL_PLANE);
+        seg.setMethodType(pcl::SAC_RANSAC);
+        seg.setMaxIterations(maxIterations);
+        seg.setDistanceThreshold(distanceThreshold);
+
+        // set model coefficient
+        pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients());
+
+        seg.setInputCloud(cloud);
+        seg.segment(*inliers, *coefficients);
+    }
+    else
+    {
+        auto result = Ransac(cloud, maxIterations, distanceThreshold);
+        for (auto it = result.begin(); it != result.end(); it++)
+        {
+            inliers->indices.push_back(*it);
+        }
     }
 
     if (inliers->indices.size() == 0)
@@ -201,7 +209,8 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::e
 
     KdTree *tree = new KdTree;
     std::vector<std::vector<float>> points;
-    for (int i = 0; i < cloud->points.size(); i++){
+    for (int i = 0; i < cloud->points.size(); i++)
+    {
         std::vector<float> v{cloud->points[i].x, cloud->points[i].y, cloud->points[i].z};
         tree->insert(v, i);
         points.push_back(v);
