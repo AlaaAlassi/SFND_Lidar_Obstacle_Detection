@@ -50,7 +50,7 @@ public:
 
     typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
 
-    std::vector<std::__fs::filesystem::path> streamPcd(std::string dataPath);
+    std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
 
 private:
     void proximity(const vector<vector<float>> &points,
