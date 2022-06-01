@@ -306,7 +306,6 @@ std::unordered_set<int> ProcessPointClouds<PointT>::Ransac(typename pcl::PointCl
         plane
     };
     ModelType model = ModelType::plane;
-    // TODO: Fill in this function
 
     // For max iterations
     for (int i = 0; i < maxIterations; i++)
@@ -376,14 +375,13 @@ std::unordered_set<int> ProcessPointClouds<PointT>::Ransac(typename pcl::PointCl
                 }
 
                 float d = abs(A * point.x + B * point.y + C * point.z + D) / sqrt(A * A + B * B + C * C);
+
                 // If distance is smaller than threshold count it as inlier
                 if (d < distanceTol)
                 {
                     inliers.insert(idx);
                 }
             }
-
-            // cout << v3.x() <<" "<< v3.y() <<" "<< v3.z() << endl;
         }
 
         if (inliers.size() > inliersResult.size())
@@ -391,7 +389,7 @@ std::unordered_set<int> ProcessPointClouds<PointT>::Ransac(typename pcl::PointCl
             inliersResult = inliers;
         }
     }
-    // Return indicies of inliers from fitted line with most inliers
 
+    // Return indicies of inliers from fitted line with most inliers
     return inliersResult;
 }
